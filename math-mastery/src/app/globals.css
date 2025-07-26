@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' 32;
+  }
+
+  /* Support pour le mode sombre */
+  .dark {
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  /* Styles pour les formules mathématiques */
+  .math-display {
+    @apply my-4 text-center overflow-x-auto;
+  }
+  
+  .math-inline {
+    @apply inline-block;
+  }
+
+  /* Styles pour le contenu markdown */
+  .prose {
+    @apply max-w-none;
+  }
+  
+  .prose h1 {
+    @apply text-2xl font-bold text-gray-900 dark:text-white mb-4;
+  }
+  
+  .prose h2 {
+    @apply text-xl font-semibold text-gray-900 dark:text-white mb-3;
+  }
+  
+  .prose h3 {
+    @apply text-lg font-medium text-gray-900 dark:text-white mb-2;
+  }
+  
+  .prose p {
+    @apply text-gray-700 dark:text-gray-300 mb-3 leading-relaxed;
+  }
+  
+  .prose ul,
+  .prose ol {
+    @apply text-gray-700 dark:text-gray-300 mb-3 pl-6;
+  }
+  
+  .prose li {
+    @apply mb-1;
+  }
+  
+  .prose strong {
+    @apply font-semibold text-gray-900 dark:text-white;
+  }
+  
+  .prose em {
+    @apply italic;
+  }
+  
+  .prose code {
+    @apply bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1 py-0.5 rounded text-sm font-mono;
+  }
+  
+  .prose pre {
+    @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4;
+  }
+  
+  .prose blockquote {
+    @apply border-l-4 border-blue-500 pl-4 italic text-gray-600 dark:text-gray-400 mb-4;
+  }
+
+  /* Styles pour les liens */
+  .prose a {
+    @apply text-blue-600 dark:text-blue-400 hover:underline;
+  }
+
+  /* Animation de chargement */
+  .loading-spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Styles pour les focus rings */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800;
+  }
+
+  /* Utilitaires pour la troncature de texte */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}
+
+@layer utilities {
+  /* Utilitaires personnalisés */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Animation personnalisée */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+}
+
+/* Keyframes pour les animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Styles pour les formules KaTeX */
+.katex {
+  font-size: 1.1em;
+}
+
+.katex-display {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+/* Styles pour améliorer l'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Styles pour l'impression */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    color: black !important;
+    background: white !important;
+  }
+}
+
+/* Focus visible pour l'accessibilité */
+.focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
