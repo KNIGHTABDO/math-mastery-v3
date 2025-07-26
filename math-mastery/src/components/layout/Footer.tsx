@@ -1,7 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { 
-  BookOpen, 
   Mail, 
   Phone, 
   MapPin, 
@@ -147,7 +146,7 @@ const Footer: React.FC = () => {
           {/* Message d'encouragement */}
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-              "Les mathématiques sont la clé qui ouvre la porte de l'univers." - Galilée
+              &quot;Les mathématiques sont la clé qui ouvre la porte de l&apos;univers.&quot; - Galilée
             </p>
           </div>
         </div>
