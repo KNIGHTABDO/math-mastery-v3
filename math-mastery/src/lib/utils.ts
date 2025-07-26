@@ -125,3 +125,94 @@ export function validatePassword(password: string) {
     }
   }
 }
+
+export function validateVideoUrl(url: string) {
+  if (!url) return { isValid: false, error: 'URL requise' }
+  
+  // Only YouTube URLs for now
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[a-zA-Z0-9_-]+(&.*)?$/
+  
+  if (youtubeRegex.test(url)) {
+    return { isValid: true }
+  }
+  
+  return { 
+    isValid: false, 
+    error: 'Seules les URLs YouTube sont supportées pour le moment (youtube.com ou youtu.be)' 
+  }
+}
+
+export function formatVideoUrl(url: string) {
+  if (!url) return null
+  
+  // Ensure URL has protocol
+  let formattedUrl = url
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    formattedUrl = 'https://' + url
+  }
+  
+  return formattedUrl
+}
+
+export function getVideoEmbedUrl(url: string) {
+  if (!url) return null
+  
+  // YouTube URLs only
+  if (url.includes('youtube.com/watch?v=')) {
+    const videoId = url.split('v=')[1]?.split('&')[0]
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+  }
+  
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1]?.split('?')[0]
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+  }
+  
+  return null
+}
+
+export function getYouTubeVideoId(url: string) {
+  if (!url) return null
+  
+  if (url.includes('youtube.com/watch?v=')) {
+    return url.split('v=')[1]?.split('&')[0] || null
+  }
+  
+  if (url.includes('youtu.be/')) {
+    return url.split('youtu.be/')[1]?.split('?')[0] || null
+  }
+  
+  return null
+}
+
+export function getYouTubeThumbnail(url: string, quality: 'default' | 'medium' | 'high' | 'maxres' = 'medium') {
+  const videoId = getYouTubeVideoId(url)
+  if (!videoId) return null
+  
+  const qualityMap = {
+    default: 'default',
+    medium: 'mqdefault',
+    high: 'hqdefault',
+    maxres: 'maxresdefault'
+  }
+  
+  return `https://img.youtube.com/vi/${videoId}/${qualityMap[quality]}.jpg`
+}
+
+export function getDifficultyColor(difficulty: string) {
+  const colors = {
+    facile: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    moyen: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    difficile: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+  }
+  return colors[difficulty as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+}
+
+export function formatTimeLimit(minutes: number) {
+  if (minutes < 60) {
+    return `${minutes} min`
+  }
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}min` : `${hours}h`
+}

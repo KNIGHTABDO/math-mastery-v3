@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { 
   Play, 
   Clock, 
@@ -15,6 +16,7 @@ import Button from '@/components/ui/Button'
 import ReactMarkdown from 'react-markdown'
 import type { Components } from 'react-markdown'
 import { InlineMath, BlockMath } from 'react-katex'
+import { getVideoEmbedUrl, getYouTubeThumbnail, getYouTubeVideoId } from '@/lib/utils'
 import 'katex/dist/katex.min.css'
 
 interface QuizQuestion {
@@ -85,42 +87,82 @@ const PostContent: React.FC<PostContentProps> = ({ post, showFullContent = false
   const renderVideoContent = () => {
     if (!post.video_url) return null
 
-    let embedUrl = post.video_url
+    const embedUrl = getVideoEmbedUrl(post.video_url)
+    const videoId = getYouTubeVideoId(post.video_url)
+    const thumbnail = getYouTubeThumbnail(post.video_url, 'high')
     
-    // Convert YouTube URLs to embed format
-    if (post.video_url.includes('youtube.com/watch?v=')) {
-      const videoId = post.video_url.split('v=')[1]?.split('&')[0]
-      embedUrl = `https://www.youtube.com/embed/${videoId}`
-    } else if (post.video_url.includes('youtu.be/')) {
-      const videoId = post.video_url.split('youtu.be/')[1]?.split('?')[0]
-      embedUrl = `https://www.youtube.com/embed/${videoId}`
-    }
-    // Convert Vimeo URLs to embed format
-    else if (post.video_url.includes('vimeo.com/')) {
-      const videoId = post.video_url.split('vimeo.com/')[1]?.split('?')[0]
-      embedUrl = `https://player.vimeo.com/video/${videoId}`
+    if (!embedUrl || !videoId) {
+      return (
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+          <p className="text-red-600 dark:text-red-400 text-sm">
+            ⚠️ URL YouTube invalide: {post.video_url}
+          </p>
+        </div>
+      )
     }
 
+    // Show thumbnail for preview, full player for full content
+    if (!showFullContent && thumbnail) {
+      return (
+        <div className="mb-6">
+          <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden group cursor-pointer">
+            <Image
+              src={thumbnail}
+              alt="Aperçu vidéo YouTube"
+              fill
+              className="object-cover"
+              unoptimized
+            />
+            {/* Play overlay */}
+            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-40 transition-all">
+              <div className="bg-red-600 rounded-full p-4 group-hover:scale-110 transition-transform">
+                <Play className="h-8 w-8 text-white fill-white" />
+              </div>
+            </div>
+            {/* YouTube indicator */}
+            <div className="absolute bottom-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-medium">
+              YouTube
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Full embedded player for detailed view
     return (
       <div className="mb-6">
-        <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-          {embedUrl !== post.video_url ? (
-            <iframe
-              src={embedUrl}
-              title="Vidéo"
-              className="w-full h-full"
-              allowFullScreen
-              frameBorder="0"
-            />
-          ) : (
-            <video
-              src={post.video_url}
-              controls
-              className="w-full h-full object-cover"
-            >
-              Votre navigateur ne supporte pas les vidéos HTML5.
-            </video>
-          )}
+        {/* YouTube Video Player */}
+        <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+          <iframe
+            src={`${embedUrl}?rel=0&modestbranding=1`}
+            title="Vidéo YouTube"
+            className="w-full h-full"
+            allowFullScreen
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          />
+        </div>
+        
+        {/* Video Info */}
+        <div className="mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center space-x-2">
+            <Play className="h-4 w-4 text-red-600" />
+            <span>Vidéo YouTube</span>
+            {videoId && (
+              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono">
+                ID: {videoId}
+              </span>
+            )}
+          </div>
+          
+          <a
+            href={post.video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            Voir sur YouTube →
+          </a>
         </div>
       </div>
     )

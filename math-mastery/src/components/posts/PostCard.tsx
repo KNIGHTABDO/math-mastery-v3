@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { formatRelativeTime, getChapterColor, getTypeIcon, getInitials } from '@/lib/utils'
+import { formatRelativeTime, getChapterColor, getTypeIcon, getInitials, getDifficultyColor, formatTimeLimit } from '@/lib/utils'
 import { PostWithAuthor } from '@/types'
 import ShareModal from './ShareModal'
 import PostContent from './PostContent'
@@ -145,6 +145,20 @@ const PostCard: React.FC<PostCardProps> = ({
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getChapterColor(localPost.chapitre)}`}>
               {localPost.chapitre}
             </span>
+            
+            {/* Afficher la difficulté pour les exercices et quiz */}
+            {(localPost.type === 'exercice' || localPost.type === 'quiz') && localPost.difficulty && (
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(localPost.difficulty)}`}>
+                {localPost.difficulty}
+              </span>
+            )}
+            
+            {/* Afficher la durée pour les quiz */}
+            {localPost.type === 'quiz' && localPost.time_limit && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                ⏱️ {formatTimeLimit(localPost.time_limit)}
+              </span>
+            )}
           </div>
         </div>
 

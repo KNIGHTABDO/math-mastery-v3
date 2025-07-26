@@ -8,13 +8,15 @@ import {
   Video, 
   HelpCircle,
   Loader2,
-  Eye
+  Eye,
+  Play
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { validateVideoUrl, formatVideoUrl, getVideoEmbedUrl, getYouTubeVideoId } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 import type { Components } from 'react-markdown'
 import { InlineMath, BlockMath } from 'react-katex'
@@ -85,8 +87,15 @@ const CreatePostPage: React.FC = () => {
       }
 
       // Validation spécifique par type
-      if (formData.type === 'video' && !formData.videoUrl?.trim()) {
-        throw new Error('L\'URL de la vidéo est obligatoire pour ce type de publication')
+      if (formData.type === 'video') {
+        if (!formData.videoUrl?.trim()) {
+          throw new Error('L\'URL de la vidéo est obligatoire pour ce type de publication')
+        }
+        
+        const videoValidation = validateVideoUrl(formData.videoUrl)
+        if (!videoValidation.isValid) {
+          throw new Error(videoValidation.error || 'URL de vidéo invalide')
+        }
       }
 
       if (formData.type === 'quiz' && (!formData.questions || formData.questions.length === 0)) {
@@ -113,7 +122,7 @@ const CreatePostPage: React.FC = () => {
       const typeSpecificData: Record<string, unknown> = {}
       
       if (formData.type === 'video') {
-        typeSpecificData.video_url = formData.videoUrl
+        typeSpecificData.video_url = formatVideoUrl(formData.videoUrl!)
         console.log('Données vidéo:', typeSpecificData)
       }
       
@@ -322,12 +331,16 @@ L'URL de la vidéo sera ajoutée dans la section ci-dessous.`
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Configuration vidéo</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <Video className="h-5 w-5 text-red-600" />
+                <span>Configuration vidéo YouTube</span>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* URL Input */}
               <div>
                 <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  URL de la vidéo *
+                  URL YouTube *
                 </label>
                 <Input
                   id="videoUrl"
@@ -335,11 +348,89 @@ L'URL de la vidéo sera ajoutée dans la section ci-dessous.`
                   type="url"
                   value={formData.videoUrl || ''}
                   onChange={handleChange}
-                  placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..."
+                  placeholder="https://youtube.com/watch?v=dQw4w9WgXcQ ou https://youtu.be/dQw4w9WgXcQ"
+                  className={formData.videoUrl && !validateVideoUrl(formData.videoUrl).isValid ? 'border-red-500' : ''}
                 />
                 <div className="mt-1 text-sm text-gray-500">
-                  Supports YouTube, Vimeo, et liens directs vers fichiers vidéo
+                  Seules les URLs YouTube sont supportées (youtube.com ou youtu.be)
                 </div>
+                
+                {/* Validation Error */}
+                {formData.videoUrl && !validateVideoUrl(formData.videoUrl).isValid && (
+                  <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+                    ⚠️ {validateVideoUrl(formData.videoUrl).error}
+                  </div>
+                )}
+              </div>
+
+              {/* YouTube Video Preview */}
+              {formData.videoUrl && validateVideoUrl(formData.videoUrl).isValid && (
+                <div className="border rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
+                  <div className="p-3 border-b bg-white dark:bg-gray-900">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                      <Play className="h-4 w-4 text-red-600 mr-2" />
+                      Aperçu de la vidéo YouTube
+                    </h4>
+                  </div>
+                  
+                  <div className="p-4">
+                    {/* Video Preview */}
+                    <div className="aspect-video bg-black rounded overflow-hidden">
+                      {(() => {
+                        const embedUrl = getVideoEmbedUrl(formData.videoUrl)
+                        
+                        return embedUrl ? (
+                          <iframe
+                            src={`${embedUrl}?rel=0&modestbranding=1&autoplay=0`}
+                            title="Aperçu YouTube"
+                            className="w-full h-full"
+                            allowFullScreen
+                            frameBorder="0"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-white">
+                            <div className="text-center">
+                              <Video className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm opacity-75">Impossible de charger l&apos;aperçu</p>
+                            </div>
+                          </div>
+                        )
+                      })()}
+                    </div>
+                    
+                    {/* Video Info */}
+                    <div className="mt-3 flex items-center justify-between text-sm">
+                      <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                        <span>ID vidéo:</span>
+                        <code className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">
+                          {getYouTubeVideoId(formData.videoUrl)}
+                        </code>
+                      </div>
+                      
+                      <a
+                        href={formData.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:underline"
+                      >
+                        Voir sur YouTube →
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Help Text */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  Comment obtenir l&apos;URL d&apos;une vidéo YouTube ?
+                </h5>
+                <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                  <li>1. Rendez-vous sur YouTube et trouvez votre vidéo</li>
+                  <li>2. Cliquez sur &quot;Partager&quot; sous la vidéo</li>
+                  <li>3. Copiez l&apos;URL qui apparaît (format youtu.be/...)</li>
+                  <li>4. Ou copiez directement l&apos;URL depuis la barre d&apos;adresse</li>
+                </ol>
               </div>
             </CardContent>
           </Card>
