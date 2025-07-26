@@ -8,10 +8,10 @@ import { AuthUser } from '@/types'
 interface AuthContextType {
   user: AuthUser | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, userData: { nom: string, prenom: string }) => Promise<{ error: any }>
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, userData: { nom: string, prenom: string }) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
-  updateUser: (userData: Partial<AuthUser>) => Promise<{ error: any }>
+  updateUser: (userData: Partial<AuthUser>) => Promise<{ error: Error | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -59,6 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser({
           id: profile.id,
           email: profile.email,
+          nom: profile.nom,
+          prenom: profile.prenom,
           role: profile.role
         })
       }
@@ -73,9 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password
       })
-      return { error }
+      return { error: error as Error | null }
     } catch (error) {
-      return { error }
+      return { error: error as Error | null }
     }
   }
 
@@ -85,35 +87,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userData: { nom: string, prenom: string }
   ) => {
     try {
+      console.log('Début de l\'inscription pour:', email)
+      
       const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            nom: userData.nom,
+            prenom: userData.prenom
+          }
+        }
       })
 
-      if (data.user && !error) {
-        // Créer le profil utilisateur
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
+      console.log('Réponse de Supabase auth.signUp:', { data, error })
+
+      if (error) {
+        console.error('Erreur lors de l\'inscription:', error)
+        return { error: error as Error | null }
+      }
+
+      if (data.user) {
+        console.log('Utilisateur créé dans Auth:', data.user.id)
+        
+        // Créer le profil utilisateur via API route pour contourner RLS
+        try {
+          console.log('Création du profil utilisateur...')
+          const response = await fetch('/api/users/create-profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
               id: data.user.id,
-              email: data.user.email!,
+              email: data.user.email,
               nom: userData.nom,
               prenom: userData.prenom,
               role: 'utilisateur',
               date_inscription: new Date().toISOString()
-            }
-          ])
+            })
+          })
 
-        if (profileError) {
+          console.log('Réponse de l\'API create-profile:', response.status)
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            console.error('Erreur lors de la création du profil:', errorData)
+            return { error: new Error(errorData.message || 'Erreur lors de la création du profil') }
+          }
+
+          const profileData = await response.json()
+          console.log('Profil créé avec succès:', profileData)
+          
+          // Si l'email n'est pas confirmé automatiquement, informer l'utilisateur
+          if (!data.session) {
+            console.log('Aucune session créée - email de confirmation probablement envoyé')
+          }
+          
+        } catch (profileError) {
           console.error('Erreur lors de la création du profil:', profileError)
-          return { error: profileError }
+          return { error: new Error('Erreur lors de la création du profil') }
         }
       }
 
-      return { error }
+      return { error: null }
     } catch (error) {
-      return { error }
+      console.error('Erreur générale lors de l\'inscription:', error)
+      return { error: error as Error | null }
     }
   }
 
@@ -135,9 +175,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser({ ...user, ...userData })
       }
 
-      return { error }
+      return { error: error as Error | null }
     } catch (error) {
-      return { error }
+      return { error: error as Error | null }
     }
   }
 

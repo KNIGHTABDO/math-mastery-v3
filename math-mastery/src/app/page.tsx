@@ -6,7 +6,6 @@ import {
   BookOpen, 
   Users, 
   TrendingUp, 
-  Star, 
   ArrowRight,
   Calculator,
   Target,
@@ -16,95 +15,151 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import PostCard from '@/components/posts/PostCard'
-import { PostWithAuthor, CHAPITRES } from '@/types'
+import { PostWithAuthor } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 const HomePage: React.FC = () => {
   const { user } = useAuth()
   const [recentPosts, setRecentPosts] = useState<PostWithAuthor[]>([])
-  const [popularPosts, setPopularPosts] = useState<PostWithAuthor[]>([])
+  const [stats, setStats] = useState({
+    total_users: 0,
+    total_posts: 0,
+    total_comments: 0,
+    success_rate: 94
+  })
   const [loading, setLoading] = useState(true)
 
-  // Simuler des données pour la démo
   useEffect(() => {
     const loadData = async () => {
-      // TODO: Remplacer par de vraies données de l'API
-      const mockPosts: PostWithAuthor[] = [
-        {
-          id: '1',
-          titre: 'Introduction aux fonctions dérivées',
-          contenu: 'Dans ce cours, nous allons découvrir les concepts fondamentaux des fonctions dérivées et leur application en analyse mathématique.\n\nLa dérivée d\'une fonction $f(x)$ au point $x = a$ est définie par:\n\n$$f\'(a) = \\lim_{h \\to 0} \\frac{f(a+h) - f(a)}{h}$$\n\nCette limite, si elle existe, nous donne la pente de la tangente à la courbe au point considéré.',
-          type: 'cours' as const,
-          tags: ['dérivées', 'analyse', 'fonctions'],
-          chapitre: 'analyse' as const,
-          auteur_id: '1',
-          date_creation: new Date(Date.now() - 86400000).toISOString(),
-          date_modification: null,
-          likes_count: 24,
-          vues_count: 156,
-          partages_count: 8,
-          officiel: true,
-          actif: true,
-          users: {
-            id: '1',
-            email: 'prof.hassan@mathmastery.ma',
-            nom: 'El Idrissi',
-            prenom: 'Hassan',
-            role: 'admin' as const,
-            photo_profil: null,
-            bio: 'Professeur de mathématiques, spécialiste en analyse',
-            date_inscription: '2024-01-01T00:00:00Z',
-            derniere_connexion: null
-          },
-          uploads: [],
-          comments: [],
-          isLiked: false
-        },
-        {
-          id: '2',
-          titre: 'Exercices sur les nombres complexes',
-          contenu: 'Série d\'exercices corrigés sur les nombres complexes pour réviser les concepts essentiels du programme 2BAC.\n\n**Exercice 1:** Soit $z = 3 + 4i$. Calculer $|z|$ et $\\arg(z)$.\n\n**Solution:**\n- $|z| = \\sqrt{3^2 + 4^2} = 5$\n- $\\arg(z) = \\arctan(\\frac{4}{3})$',
-          type: 'exercice' as const,
-          tags: ['complexes', 'exercices', 'algèbre'],
-          chapitre: 'algebre' as const,
-          auteur_id: '2',
-          date_creation: new Date(Date.now() - 172800000).toISOString(),
-          date_modification: null,
-          likes_count: 18,
-          vues_count: 89,
-          partages_count: 5,
-          officiel: false,
-          actif: true,
-          users: {
-            id: '2',
-            email: 'amal.bennani@example.com',
-            nom: 'Bennani',
-            prenom: 'Amal',
-            role: 'utilisateur' as const,
-            photo_profil: null,
-            bio: null,
-            date_inscription: '2024-01-15T00:00:00Z',
-            derniere_connexion: null
-          },
-          uploads: [],
-          comments: [],
-          isLiked: user?.id === '2'
-        }
-      ]
+      try {
+        // Charger les posts récents
+        const { data: postsData, error: postsError } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          users (
+            id,
+            email,
+            nom,
+            prenom,
+            role,
+            photo_profil,
+            bio,
+            date_inscription
+          ),
+          uploads (*),
+          comments (
+            id,
+            contenu,
+            date_creation,
+            users (nom, prenom)
+          )
+        `)
+        .eq('actif', true)
+        .order('date_creation', { ascending: false })
+        .limit(4)
 
-      setRecentPosts(mockPosts)
-      setPopularPosts(mockPosts.sort((a, b) => b.likes_count - a.likes_count))
+      if (postsError) throw postsError
+
+      // Transformer les données et vérifier les likes
+      const transformedPosts: PostWithAuthor[] = []
+      for (const post of postsData || []) {
+        let isLiked = false
+        if (user) {
+          const { data: likeData } = await supabase
+            .from('likes')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('post_id', post.id)
+            .single()
+          isLiked = !!likeData
+        }
+
+        transformedPosts.push({
+          ...post,
+          comments: post.comments || [],
+          uploads: post.uploads || [],
+          isLiked
+        })
+      }
+
+      setRecentPosts(transformedPosts)
+
+      // Charger les statistiques
+      const [usersCount, postsCount, commentsCount] = await Promise.all([
+        supabase.from('users').select('*', { count: 'exact' }),
+        supabase.from('posts').select('*', { count: 'exact' }).eq('actif', true),
+        supabase.from('comments').select('*', { count: 'exact' })
+      ])
+
+      setStats({
+        total_users: usersCount.count || 0,
+        total_posts: postsCount.count || 0,
+        total_comments: commentsCount.count || 0,
+        success_rate: 94
+      })
+
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error)
+    } finally {
       setLoading(false)
+    }
     }
 
     loadData()
   }, [user])
 
-  const stats = [
-    { label: 'Étudiants actifs', value: '2,847', icon: Users, color: 'text-blue-600' },
-    { label: 'Cours disponibles', value: '156', icon: BookOpen, color: 'text-green-600' },
-    { label: 'Exercices résolus', value: '4,293', icon: Calculator, color: 'text-purple-600' },
-    { label: 'Taux de réussite', value: '94%', icon: TrendingUp, color: 'text-orange-600' }
+  const handleLikePost = async (postId: string) => {
+    if (!user) return
+
+    try {
+      const { data: existingLike } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('post_id', postId)
+        .single()
+
+      const currentPost = recentPosts.find(p => p.id === postId)
+      if (!currentPost) return
+
+      if (existingLike) {
+        await supabase
+          .from('likes')
+          .delete()
+          .eq('id', existingLike.id)
+
+        await supabase
+          .from('posts')
+          .update({ likes_count: currentPost.likes_count - 1 })
+          .eq('id', postId)
+      } else {
+        await supabase
+          .from('likes')
+          .insert({
+            user_id: user.id,
+            post_id: postId
+          })
+
+        await supabase
+          .from('posts')
+          .update({ likes_count: currentPost.likes_count + 1 })
+          .eq('id', postId)
+      }
+
+      // Reload data to refresh the posts
+      window.location.reload()
+    } catch (error) {
+      console.error('Erreur lors du like:', error)
+    }
+  }
+
+  const displayStats = [
+    { label: 'Étudiants actifs', value: stats.total_users.toString(), icon: Users, color: 'text-blue-600' },
+    { label: 'Cours disponibles', value: stats.total_posts.toString(), icon: BookOpen, color: 'text-green-600' },
+    { label: 'Commentaires', value: stats.total_comments.toString(), icon: Calculator, color: 'text-purple-600' },
+    { label: 'Taux de réussite', value: `${stats.success_rate}%`, icon: TrendingUp, color: 'text-orange-600' }
   ]
 
   const features = [
@@ -151,16 +206,16 @@ const HomePage: React.FC = () => {
               du 2BAC
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-              Rejoignez la communauté d'étudiants marocains en Sciences Mathématiques et Physiques. 
+              Rejoignez la communauté d&apos;étudiants marocains en Sciences Mathématiques et Physiques. 
               Cours, exercices, quiz et entraide pour exceller au Baccalauréat.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {user ? (
-                <Link href="/explorer">
+                <Link href="/dashboard">
                   <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
                     <BookOpen className="h-5 w-5 mr-2" />
-                    Explorer les cours
+                    Accéder au dashboard
                   </Button>
                 </Link>
               ) : (
@@ -187,13 +242,13 @@ const HomePage: React.FC = () => {
       <section className="py-16 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat) => (
+            {displayStats.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 mb-4`}>
                   <stat.icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
                 <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                  {stat.value}
+                  {loading ? '...' : stat.value}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {stat.label}
@@ -276,23 +331,35 @@ const HomePage: React.FC = () => {
                 </Card>
               ))}
             </div>
+          ) : recentPosts.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Aucune publication encore
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Soyez le premier à partager du contenu avec la communauté !
+                </p>
+                {user && (
+                  <Link href="/creer-post">
+                    <Button>
+                      Créer la première publication
+                    </Button>
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
-              {recentPosts.slice(0, 4).map((post) => (
+              {recentPosts.map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}
-                  onLike={() => {
-                    // TODO: Implémenter la logique de like
-                    console.log('Like post', post.id)
-                  }}
-                  onComment={() => {
-                    // TODO: Implémenter la logique de commentaire
-                    console.log('Comment post', post.id)
-                  }}
+                  onLike={() => handleLikePost(post.id)}
+                  onComment={() => window.open(`/posts/${post.id}`, '_blank')}
                   onShare={() => {
-                    // TODO: Implémenter la logique de partage
-                    console.log('Share post', post.id)
+                    navigator.clipboard.writeText(`${window.location.origin}/posts/${post.id}`)
                   }}
                 />
               ))}
@@ -339,7 +406,7 @@ const HomePage: React.FC = () => {
               Prêt à exceller en mathématiques ?
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Rejoignez des milliers d'étudiants qui ont choisi Math Mastery pour réussir leur 2BAC
+              Rejoignez des milliers d&apos;étudiants qui ont choisi Math Mastery pour réussir leur 2BAC
             </p>
             <Link href="/inscription">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">

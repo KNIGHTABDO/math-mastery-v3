@@ -2,31 +2,29 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { 
   Heart, 
   MessageCircle, 
   Share2, 
-  Eye, 
-  Calendar,
-  User,
-  Star,
-  FileText,
-  Video,
+  BookOpen, 
+  FileText, 
+  Video, 
   HelpCircle,
-  BookOpen
+  Eye,
+  Calendar,
+  Star
 } from 'lucide-react'
-import { PostWithAuthor } from '@/types'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { 
-  formatRelativeTime, 
-  getChapterColor, 
-  getTypeIcon,
-  truncateText,
-  getInitials
-} from '@/lib/utils'
+import { formatRelativeTime, getChapterColor, getTypeIcon, getInitials, truncateText } from '@/lib/utils'
+import { PostWithAuthor } from '@/types'
 import ReactMarkdown from 'react-markdown'
+import type { Components } from 'react-markdown'
 import 'katex/dist/katex.min.css'
+import ShareModal from './ShareModal'
+import PostContent from './PostContent'
+import { supabase } from '@/lib/supabase'
 import { InlineMath, BlockMath } from 'react-katex'
 
 interface PostCardProps {
@@ -45,12 +43,45 @@ const PostCard: React.FC<PostCardProps> = ({
   onShare
 }) => {
   const [isLiking, setIsLiking] = useState(false)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [localPost, setLocalPost] = useState(post)
+
+  // Sync localPost with post prop when it changes
+  React.useEffect(() => {
+    setLocalPost(post)
+  }, [post])
 
   const handleLike = async () => {
     if (isLiking || !onLike) return
     setIsLiking(true)
     await onLike()
     setIsLiking(false)
+  }
+
+  const handleShare = async () => {
+    try {
+      // Ouvrir le modal de partage
+      setIsShareModalOpen(true)
+      
+      // Incrémenter le compteur de partages
+      await supabase
+        .from('posts')
+        .update({ partages_count: localPost.partages_count + 1 })
+        .eq('id', post.id)
+      
+      // Mettre à jour l'état local
+      setLocalPost(prev => ({
+        ...prev,
+        partages_count: prev.partages_count + 1
+      }))
+      
+      // Appeler la fonction onShare si fournie
+      if (onShare) {
+        onShare()
+      }
+    } catch (error) {
+      console.error('Erreur lors du partage:', error)
+    }
   }
 
   const getTypeIconComponent = (type: string) => {
@@ -69,21 +100,25 @@ const PostCard: React.FC<PostCardProps> = ({
   }
 
   const renderContent = (content: string) => {
-    const components = {
-      // Rendu des formules LaTeX inline
-      code: ({ node, inline, className, children, ...props }: any) => {
-        const match = /language-(\w+)/.exec(className || '')
-        if (inline && typeof children === 'string' && children.startsWith('$') && children.endsWith('$')) {
+    const components: Components = {
+      // Rendu des formules LaTeX inline  
+      code: (props) => {
+        const { children, className, ...rest } = props
+        // Check if this is inline LaTeX
+        if (typeof children === 'string' && children.startsWith('$') && children.endsWith('$')) {
           const formula = children.slice(1, -1)
           return <InlineMath math={formula} />
         }
-        return <code className={className} {...props}>{children}</code>
+        return <code className={className} {...rest}>{children}</code>
       },
       // Rendu des blocs de formules LaTeX
-      pre: ({ children }: any) => {
+      pre: ({ children }) => {
         const child = React.Children.only(children)
-        if (React.isValidElement(child) && child.props.children) {
-          const content = child.props.children
+        if (React.isValidElement(child) && 
+            typeof child.props === 'object' && 
+            child.props !== null && 
+            'children' in child.props) {
+          const content = (child.props as { children: unknown }).children
           if (typeof content === 'string' && content.startsWith('$$') && content.endsWith('$$')) {
             const formula = content.slice(2, -2)
             return <BlockMath math={formula} />
@@ -107,15 +142,17 @@ const PostCard: React.FC<PostCardProps> = ({
           <div className="flex items-center space-x-3">
             {/* Avatar utilisateur */}
             <div className="flex-shrink-0">
-              {post.users.photo_profil ? (
-                <img
-                  src={post.users.photo_profil}
-                  alt={`${post.users.prenom} ${post.users.nom}`}
+              {localPost.users.photo_profil ? (
+                <Image
+                  src={localPost.users.photo_profil}
+                  alt={`${localPost.users.prenom} ${localPost.users.nom}`}
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded-full object-cover"
                 />
               ) : (
                 <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                  {getInitials(post.users.prenom, post.users.nom)}
+                  {getInitials(localPost.users.prenom, localPost.users.nom)}
                 </div>
               )}
             </div>
@@ -123,18 +160,18 @@ const PostCard: React.FC<PostCardProps> = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2">
                 <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                  {post.users.prenom} {post.users.nom}
+                  {localPost.users.prenom} {localPost.users.nom}
                 </h3>
-                {post.officiel && (
+                {localPost.officiel && (
                   <Star className="h-4 w-4 text-yellow-500 fill-current" />
                 )}
               </div>
               <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                 <Calendar className="h-3 w-3" />
-                <span>{formatRelativeTime(post.date_creation)}</span>
+                <span>{formatRelativeTime(localPost.date_creation)}</span>
                 <span>•</span>
                 <Eye className="h-3 w-3" />
-                <span>{post.vues_count} vues</span>
+                <span>{localPost.vues_count} vues</span>
               </div>
             </div>
           </div>
@@ -142,22 +179,22 @@ const PostCard: React.FC<PostCardProps> = ({
           {/* Type et chapitre */}
           <div className="flex flex-col items-end space-y-1">
             <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-300">
-              {getTypeIconComponent(post.type)}
-              <span className="text-xs font-medium">{getTypeIcon(post.type)}</span>
+              {getTypeIconComponent(localPost.type)}
+              <span className="text-xs font-medium">{getTypeIcon(localPost.type)}</span>
             </div>
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getChapterColor(post.chapitre)}`}>
-              {post.chapitre}
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getChapterColor(localPost.chapitre)}`}>
+              {localPost.chapitre}
             </span>
           </div>
         </div>
 
         {/* Titre */}
         <Link 
-          href={`/posts/${post.id}`}
+          href={`/posts/${localPost.id}`}
           className="block mt-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
-            {post.titre}
+            {localPost.titre}
           </h2>
         </Link>
       </CardHeader>
@@ -165,12 +202,12 @@ const PostCard: React.FC<PostCardProps> = ({
       <CardContent>
         {/* Contenu */}
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          {renderContent(post.contenu)}
+          {renderContent(localPost.contenu)}
         </div>
 
-        {!showFullContent && post.contenu.length > 300 && (
+        {!showFullContent && localPost.contenu.length > 300 && (
           <Link 
-            href={`/posts/${post.id}`}
+            href={`/posts/${localPost.id}`}
             className="inline-block mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
             Lire la suite →
@@ -178,9 +215,9 @@ const PostCard: React.FC<PostCardProps> = ({
         )}
 
         {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
+        {localPost.tags && localPost.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">
-            {post.tags.map((tag, index) => (
+            {localPost.tags.map((tag, index) => (
               <span
                 key={index}
                 className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
@@ -192,9 +229,9 @@ const PostCard: React.FC<PostCardProps> = ({
         )}
 
         {/* Pièces jointes */}
-        {post.uploads && post.uploads.length > 0 && (
+        {localPost.uploads && localPost.uploads.length > 0 && (
           <div className="mt-3 space-y-2">
-            {post.uploads.map((upload) => (
+            {localPost.uploads.map((upload) => (
               <div
                 key={upload.id}
                 className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md"
@@ -222,13 +259,13 @@ const PostCard: React.FC<PostCardProps> = ({
               onClick={handleLike}
               loading={isLiking}
               className={`text-gray-500 hover:text-red-500 ${
-                post.isLiked ? 'text-red-500' : ''
+                localPost.isLiked ? 'text-red-500' : ''
               }`}
             >
               <Heart 
-                className={`h-4 w-4 mr-1 ${post.isLiked ? 'fill-current' : ''}`} 
+                className={`h-4 w-4 mr-1 ${localPost.isLiked ? 'fill-current' : ''}`} 
               />
-              <span>{post.likes_count}</span>
+              <span>{localPost.likes_count}</span>
             </Button>
 
             {/* Commentaires */}
@@ -239,24 +276,24 @@ const PostCard: React.FC<PostCardProps> = ({
               className="text-gray-500 hover:text-blue-500"
             >
               <MessageCircle className="h-4 w-4 mr-1" />
-              <span>{post.comments?.length || 0}</span>
+              <span>{localPost.comments?.length || 0}</span>
             </Button>
 
             {/* Partage */}
             <Button
               variant="ghost"
               size="sm"
-              onClick={onShare}
+              onClick={handleShare}
               className="text-gray-500 hover:text-green-500"
             >
               <Share2 className="h-4 w-4 mr-1" />
-              <span>{post.partages_count}</span>
+              <span>{localPost.partages_count}</span>
             </Button>
           </div>
 
           {/* Lien vers le post complet */}
           {!showFullContent && (
-            <Link href={`/posts/${post.id}`}>
+            <Link href={`/posts/${localPost.id}`}>
               <Button variant="outline" size="sm">
                 Voir le post
               </Button>
@@ -264,6 +301,13 @@ const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
       </CardFooter>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        post={localPost}
+      />
     </Card>
   )
 }

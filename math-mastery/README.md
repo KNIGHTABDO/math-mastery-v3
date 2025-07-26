@@ -1,326 +1,132 @@
-# 🧮 Math Mastery
+# Math Mastery - Plateforme éducative pour 2BAC Sciences Mathématiques
 
-Plateforme éducative communautaire destinée aux étudiants marocains en 2ème année Baccalauréat (2BAC) - option Sciences Mathématiques et Physiques.
+Une plateforme communautaire dédiée aux étudiants marocains en 2ème année Baccalauréat Sciences Mathématiques et Physiques.
 
-## 🎯 Objectif
+## 🚀 Fonctionnalités
 
-Math Mastery est une plateforme 100% en français qui permet aux étudiants de :
+- **Cours complets** : Accès à des cours détaillés couvrant tout le programme 2BAC Sciences Mathématiques
+- **Exercices interactifs** : Pratique avec des exercices variés et des corrections détaillées
+- **Communauté active** : Échange avec d'autres étudiants et possibilité de poser des questions
+- **Suivi des progrès** : Suivi de progression et identification des points forts
+- **Formules mathématiques** : Rendu LaTeX intégré pour les formules mathématiques
+- **Mode sombre** : Interface adaptable selon les préférences
 
-- 📚 Consulter des contenus mathématiques adaptés au programme marocain 2BAC
-- 💬 Commenter, aimer et partager les publications
-- 🎓 Apprendre avec une communauté active d'étudiants
-- 📊 Suivre leur progression et améliorer leurs résultats
+## 🛠️ Technologies utilisées
 
-## ✨ Fonctionnalités
-
-### 👥 Pour les étudiants
-
-- ✅ Créer un compte / se connecter
-- 📚 Accéder aux publications (cours, exercices, quiz, vidéos)
-- 💬 Commenter des publications
-- ❤️ Aimer (liker) les publications
-- 🔁 Partager une publication
-- 🔍 Rechercher par mots-clés, par chapitre
-- 🧮 Support LaTeX pour les formules mathématiques
-- 🌙 Mode clair / sombre
-
-### 🧑‍💼 Pour les administrateurs
-
-- ➕ Ajouter / Modifier / Supprimer des publications
-- 📁 Gérer les fichiers (PDFs, vidéos, images)
-- ⭐ Marquer des posts comme "officiels"
-- 📊 Voir les statistiques (vues, likes, partages)
-- 👥 Gérer les utilisateurs
-
-### 📂 Types de contenus
-
-- 📘 **Cours** : Contenus théoriques détaillés
-- 📝 **Exercices** : Problèmes avec solutions
-- 📊 **Quiz** : Évaluations interactives
-- 🎬 **Vidéos** : Contenu multimédia
-
-### 📌 Chapitres couverts
-
-- 🔵 **Analyse** : Fonctions, dérivées, intégrales
-- 🟢 **Algèbre** : Nombres complexes, polynômes
-- 🟣 **Géométrie** : Géométrie dans l'espace
-- 🟠 **Probabilités** : Statistiques et probabilités
-
-## 🛠️ Stack Technologique
-
-- **Frontend** : Next.js 14 avec App Router, TypeScript
-- **UI/UX** : Tailwind CSS, Lucide React Icons
-- **Backend** : API Routes Next.js
+- **Frontend** : Next.js 15, React 19, TypeScript
+- **Styling** : Tailwind CSS v4
+- **Authentification** : Supabase Auth
 - **Base de données** : Supabase (PostgreSQL)
-- **Authentification** : Supabase Auth avec gestion des rôles
-- **Stockage** : Supabase Storage
-- **Formules mathématiques** : KaTeX, react-katex
-- **Markdown** : react-markdown
-- **Formulaires** : React Hook Form + Zod
-- **Date/Heure** : date-fns avec locale française
+- **Formules mathématiques** : KaTeX + react-katex
+- **Icônes** : Lucide React
 
-## 🚀 Installation
-
-### Prérequis
+## 📋 Prérequis
 
 - Node.js 18+
 - npm ou yarn
-- Compte Supabase
+- Compte Supabase (pour la base de données et l'authentification)
 
-### 1. Cloner le projet
+## ⚡ Installation et configuration
 
-```bash
-git clone <url-du-repo>
-cd math-mastery
-```
+1. **Cloner le repository**
 
-### 2. Installer les dépendances
+   ```bash
+   git clone [url-du-repo]
+   cd math-mastery
+   ```
 
-```bash
-npm install
-```
+2. **Installer les dépendances**
 
-### 3. Configuration des variables d'environnement
+   ```bash
+   npm install
+   ```
 
-Copier le fichier `.env.local.example` vers `.env.local` :
+3. **Configuration Supabase**
 
-```bash
-cp .env.local.example .env.local
-```
+   - Créer un projet sur [supabase.com](https://supabase.com)
+   - Copier `.env.local.example` vers `.env.local`
+   - Remplir les variables d'environnement Supabase :
+     ```env
+     NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+     ```
 
-Puis remplir les variables d'environnement :
+4. **Lancer le serveur de développement**
 
-```env
-# Configuration Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   ```bash
+   npm run dev
+   ```
 
-# Configuration de l'application
-NEXT_PUBLIC_APP_NAME="Math Mastery"
-NEXT_PUBLIC_APP_DESCRIPTION="Plateforme éducative pour les étudiants marocains 2BAC Sciences Mathématiques"
-```
+5. **Ouvrir l'application**
+   Naviguer vers [http://localhost:3000](http://localhost:3000)
 
-### 4. Configuration de la base de données Supabase
+## 🏗️ Scripts disponibles
 
-#### Créer les tables
+- `npm run dev` : Démarre le serveur de développement
+- `npm run build` : Compile l'application pour la production
+- `npm run start` : Démarre le serveur de production
+- `npm run lint` : Vérifie le code avec ESLint
 
-Exécuter le SQL suivant dans l'éditeur SQL de Supabase :
-
-```sql
--- Enable Row Level Security
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
-
--- Create users table
-CREATE TABLE public.users (
-    id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
-    nom TEXT NOT NULL,
-    prenom TEXT NOT NULL,
-    role TEXT DEFAULT 'utilisateur' CHECK (role IN ('utilisateur', 'admin')),
-    photo_profil TEXT,
-    bio TEXT,
-    date_inscription TIMESTAMPTZ DEFAULT NOW(),
-    derniere_connexion TIMESTAMPTZ
-);
-
--- Create posts table
-CREATE TABLE public.posts (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    titre TEXT NOT NULL,
-    contenu TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('cours', 'exercice', 'quiz', 'video')),
-    tags TEXT[] DEFAULT '{}',
-    chapitre TEXT NOT NULL CHECK (chapitre IN ('analyse', 'algebre', 'geometrie', 'probabilites')),
-    auteur_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    date_creation TIMESTAMPTZ DEFAULT NOW(),
-    date_modification TIMESTAMPTZ,
-    likes_count INTEGER DEFAULT 0,
-    vues_count INTEGER DEFAULT 0,
-    partages_count INTEGER DEFAULT 0,
-    officiel BOOLEAN DEFAULT FALSE,
-    actif BOOLEAN DEFAULT TRUE
-);
-
--- Create comments table
-CREATE TABLE public.comments (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    contenu TEXT NOT NULL,
-    date_creation TIMESTAMPTZ DEFAULT NOW(),
-    parent_id UUID REFERENCES public.comments(id) ON DELETE CASCADE
-);
-
--- Create likes table
-CREATE TABLE public.likes (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE,
-    date_creation TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, post_id)
-);
-
--- Create uploads table
-CREATE TABLE public.uploads (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE,
-    nom_fichier TEXT NOT NULL,
-    type_fichier TEXT NOT NULL CHECK (type_fichier IN ('pdf', 'image', 'video')),
-    taille_fichier BIGINT NOT NULL,
-    url_fichier TEXT NOT NULL,
-    date_upload TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Create notifications table
-CREATE TABLE public.notifications (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('like', 'comment', 'nouveau_post', 'mention')),
-    titre TEXT NOT NULL,
-    message TEXT NOT NULL,
-    lu BOOLEAN DEFAULT FALSE,
-    date_creation TIMESTAMPTZ DEFAULT NOW(),
-    lien TEXT
-);
-
--- Enable Row Level Security
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.likes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.uploads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
-
--- Create policies
-CREATE POLICY "Users can view all profiles" ON public.users FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
-
-CREATE POLICY "Anyone can view active posts" ON public.posts FOR SELECT USING (actif = true);
-CREATE POLICY "Authenticated users can create posts" ON public.posts FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Users can update own posts" ON public.posts FOR UPDATE USING (auth.uid() = auteur_id);
-
-CREATE POLICY "Anyone can view comments" ON public.comments FOR SELECT USING (true);
-CREATE POLICY "Authenticated users can create comments" ON public.comments FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Users can update own comments" ON public.comments FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Anyone can view likes" ON public.likes FOR SELECT USING (true);
-CREATE POLICY "Authenticated users can manage likes" ON public.likes FOR ALL USING (auth.uid() = user_id);
-
-CREATE POLICY "Anyone can view uploads" ON public.uploads FOR SELECT USING (true);
-CREATE POLICY "Authenticated users can manage uploads" ON public.uploads FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.posts WHERE posts.id = uploads.post_id AND posts.auteur_id = auth.uid())
-);
-
-CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
-```
-
-#### Configurer l'authentification
-
-1. Dans le tableau de bord Supabase, aller dans Authentication > Settings
-2. Configurer les URLs de redirection
-3. Activer les providers email (requis)
-
-#### Configurer le stockage
-
-1. Créer un bucket `uploads` dans Storage
-2. Configurer les policies pour permettre l'upload aux utilisateurs authentifiés
-
-### 5. Lancer l'application
-
-```bash
-npm run dev
-```
-
-L'application sera disponible sur [http://localhost:3000](http://localhost:3000)
-
-## 📱 Utilisation
-
-### Pour les étudiants
-
-1. **S'inscrire** : Créer un compte avec email/mot de passe
-2. **Explorer** : Parcourir les cours par chapitre ou type
-3. **Participer** : Liker, commenter et partager les contenus
-4. **Rechercher** : Utiliser la barre de recherche pour trouver des sujets spécifiques
-
-### Pour les administrateurs
-
-1. Se connecter avec un compte admin
-2. Accéder au tableau de bord admin via le menu
-3. Créer du contenu avec l'éditeur intégré (support LaTeX)
-4. Gérer les utilisateurs et modérer les commentaires
-
-## 🌐 Déploiement
-
-### Vercel (Recommandé)
-
-1. Connecter le repo GitHub à Vercel
-2. Configurer les variables d'environnement dans Vercel
-3. Déployer automatiquement
-
-### Netlify
-
-1. Construire l'application : `npm run build`
-2. Déployer le dossier `out/` sur Netlify
-
-### Docker
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-
-## 🧪 Scripts disponibles
-
-```bash
-# Développement
-npm run dev
-
-# Build de production
-npm run build
-
-# Démarrer en production
-npm start
-
-# Linter
-npm run lint
-
-# Type checking
-npm run type-check
-```
-
-## 🗂️ Structure du projet
+## 📚 Structure du projet
 
 ```
-math-mastery/
-├── src/
-│   ├── app/                 # Pages App Router
-│   ├── components/          # Composants réutilisables
-│   │   ├── ui/             # Composants UI de base
-│   │   ├── layout/         # Layout components
-│   │   ├── posts/          # Composants liés aux posts
-│   │   └── comments/       # Composants de commentaires
-│   ├── contexts/           # Contextes React
-│   ├── lib/                # Utilitaires et configuration
-│   ├── types/              # Types TypeScript
-│   └── styles/             # Styles globaux
-├── public/                 # Assets statiques
-└── README.md
+src/
+├── app/                 # App Router de Next.js
+├── components/          # Composants React réutilisables
+│   ├── ui/             # Composants d'interface utilisateur
+│   ├── layout/         # Composants de mise en page
+│   ├── posts/          # Composants liés aux publications
+│   └── comments/       # Composants de commentaires
+├── contexts/           # Contextes React (Auth, Theme)
+├── lib/                # Utilitaires et configuration
+└── types/              # Définitions TypeScript
 ```
+
+## 🎨 Fonctionnalités principales
+
+### Authentification
+
+- Inscription et connexion via Supabase Auth
+- Gestion des profils utilisateur
+- Protection des routes
+
+### Publications
+
+- Création de cours, exercices, quiz
+- Support des formules LaTeX (inline et bloc)
+- Système de likes et commentaires
+- Categorisation par chapitres
+
+### Interface utilisateur
+
+- Design responsive (mobile-first)
+- Mode sombre/clair
+- Composants UI réutilisables
+- Animations et transitions fluides
+
+## 🔧 Configuration Tailwind CSS v4
+
+Le projet utilise Tailwind CSS v4 avec la configuration suivante :
+
+- Import via `@import "tailwindcss"`
+- Configuration PostCSS optimisée
+- Classes utilitaires personnalisées
+
+## 📱 Chapitres couverts
+
+- **Analyse** : Fonctions, dérivées, intégrales
+- **Algèbre** : Nombres complexes, polynômes
+- **Géométrie** : Géométrie dans l'espace
+- **Probabilités** : Statistiques et probabilités
 
 ## 🤝 Contribution
 
+Les contributions sont les bienvenues ! Merci de :
+
 1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
-4. Push sur la branche (`git push origin feature/AmazingFeature`)
+2. Créer une branche pour votre fonctionnalité
+3. Commiter vos changements
+4. Pousser vers la branche
 5. Ouvrir une Pull Request
 
 ## 📄 Licence
@@ -329,17 +135,11 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ## 🆘 Support
 
-- 📧 Email : contact@mathmastery.ma
-- 💬 Discussions GitHub
-- 📚 Documentation : [Wiki du projet]
+Pour toute question ou problème :
 
-## 🙏 Remerciements
-
-- 🇲🇦 Ministère de l'Éducation Nationale du Maroc pour le programme officiel
-- 👨‍🏫 Tous les professeurs qui contribuent au contenu
-- 🎓 La communauté d'étudiants pour leurs retours
-- 🛠️ Les maintainers des librairies open-source utilisées
+- Ouvrir une issue sur GitHub
+- Contacter l'équipe de développement
 
 ---
 
-**Math Mastery** - _"Les mathématiques sont la clé qui ouvre la porte de l'univers."_ - Galilée
+**Math Mastery** - Excellez en mathématiques au 2BAC ! 🎓✨

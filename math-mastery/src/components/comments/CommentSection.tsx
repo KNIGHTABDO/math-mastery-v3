@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { MessageCircle, Reply, MoreVertical, Trash2, Edit } from 'lucide-react'
+import { MessageCircle, Reply, Trash2, Edit } from 'lucide-react'
 import { CommentWithUser, CommentForm } from '@/types'
-import { Card, CardContent, CardHeader } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { formatRelativeTime, getInitials } from '@/lib/utils'

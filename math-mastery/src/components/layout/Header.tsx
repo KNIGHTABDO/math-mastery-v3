@@ -8,21 +8,18 @@ import {
   X, 
   Moon, 
   Sun, 
-  User, 
   LogOut, 
-  Settings, 
   Bell,
   Search,
   Plus,
   BookOpen,
-  Users,
   BarChart3
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import { Modal, ModalContent } from '@/components/ui/Modal'
+// import { Modal, ModalContent } from '@/components/ui/Modal'
 
 const Header: React.FC = () => {
   const { user, signOut } = useAuth()
@@ -48,13 +45,7 @@ const Header: React.FC = () => {
   const navigationItems = [
     { name: 'Accueil', href: '/', icon: BookOpen },
     { name: 'Explorer', href: '/explorer', icon: Search },
-    { name: 'Communauté', href: '/communaute', icon: Users }
-  ]
-
-  const adminNavigationItems = [
-    { name: 'Tableau de bord', href: '/admin', icon: BarChart3 },
-    { name: 'Gérer les posts', href: '/admin/posts', icon: BookOpen },
-    { name: 'Utilisateurs', href: '/admin/users', icon: Users }
+    ...(user ? [{ name: 'Tableau de bord', href: '/dashboard', icon: BarChart3 }] : [])
   ]
 
   return (
@@ -87,22 +78,6 @@ const Header: React.FC = () => {
                   <span>{item.name}</span>
                 </Link>
               ))}
-              
-              {user?.role === 'admin' && (
-                <>
-                  <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
-                  {adminNavigationItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.name}</span>
-                    </Link>
-                  ))}
-                </>
-              )}
             </nav>
 
             {/* Barre de recherche */}
@@ -157,9 +132,9 @@ const Header: React.FC = () => {
                     <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
                   </Button>
 
-                  {/* Bouton créer post (admin) */}
-                  {user.role === 'admin' && (
-                    <Link href="/admin/posts/nouveau">
+                  {/* Bouton créer post (utilisateurs connectés) */}
+                  {user && (
+                    <Link href="/creer-post">
                       <Button size="sm">
                         <Plus className="h-4 w-4 mr-1" />
                         <span className="hidden sm:inline">Créer</span>
@@ -176,7 +151,7 @@ const Header: React.FC = () => {
                       className="p-2"
                     >
                       <div className="h-6 w-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {user.email.charAt(0).toUpperCase()}
+                        {user.prenom ? user.prenom.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
                       </div>
                     </Button>
 
@@ -184,31 +159,13 @@ const Header: React.FC = () => {
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
                         <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {user.email}
+                            {user.prenom && user.nom ? `${user.prenom} ${user.nom}` : user.email}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                            {user.role}
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {user.email}
                           </p>
                         </div>
                         
-                        <Link
-                          href="/profil"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <User className="h-4 w-4 mr-2" />
-                          Mon profil
-                        </Link>
-                        
-                        <Link
-                          href="/parametres"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <Settings className="h-4 w-4 mr-2" />
-                          Paramètres
-                        </Link>
-
                         <div className="border-t border-gray-200 dark:border-gray-700">
                           <button
                             onClick={handleSignOut}
@@ -282,21 +239,16 @@ const Header: React.FC = () => {
                 </Link>
               ))}
 
-              {user?.role === 'admin' && (
-                <>
-                  <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" />
-                  {adminNavigationItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center space-x-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.name}</span>
-                    </Link>
-                  ))}
-                </>
+              {/* Créer un post pour les utilisateurs connectés */}
+              {user && (
+                <Link
+                  href="/creer-post"
+                  className="flex items-center space-x-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Créer un post</span>
+                </Link>
               )}
 
               {/* Bouton de thème mobile */}

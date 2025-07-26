@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   description: 'Plateforme communautaire dédiée aux étudiants marocains en 2ème année Baccalauréat Sciences Mathématiques et Physiques. Cours, exercices, quiz et communauté d\'apprentissage.',
   keywords: 'mathématiques, 2bac, maroc, sciences mathématiques, cours, exercices, quiz, communauté, éducation',
   authors: [{ name: 'Math Mastery Team' }],
-  viewport: 'width=device-width, initial-scale=1',
   openGraph: {
     title: 'Math Mastery - Plateforme éducative pour 2BAC Sciences Mathématiques',
     description: 'Rejoignez la communauté Math Mastery et excellez en mathématiques au 2BAC Sciences Mathématiques et Physiques',
@@ -29,6 +28,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.json'
 }
 
+export const viewport = 'width=device-width, initial-scale=1';
+
 export default function RootLayout({
   children,
 }: {
@@ -37,8 +38,6 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="theme-color" content="#3B82F6" />
       </head>
       <body className={`${inter.className} min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100`}>

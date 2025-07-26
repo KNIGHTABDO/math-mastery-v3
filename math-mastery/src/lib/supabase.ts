@@ -12,7 +12,9 @@ export const supabase = createBrowserClient<Database>(
 )
 
 // Client pour l'administration (côté serveur uniquement)
+// Fallback to anon key if service role key is not available
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
 export const supabaseAdmin = createClient<Database>(
   supabaseUrl,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  serviceRoleKey
 )
