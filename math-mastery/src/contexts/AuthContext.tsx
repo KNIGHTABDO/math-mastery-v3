@@ -8,10 +8,10 @@ import { AuthUser } from '@/types'
 interface AuthContextType {
   user: AuthUser | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, userData: { nom: string, prenom: string }) => Promise<{ error: any }>
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, userData: { nom: string, prenom: string }) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
-  updateUser: (userData: Partial<AuthUser>) => Promise<{ error: any }>
+  updateUser: (userData: Partial<AuthUser>) => Promise<{ error: Error | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)

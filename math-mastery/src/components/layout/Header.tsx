@@ -22,7 +22,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import { Modal, ModalContent } from '@/components/ui/Modal'
+// import { Modal, ModalContent } from '@/components/ui/Modal'
 
 const Header: React.FC = () => {
   const { user, signOut } = useAuth()

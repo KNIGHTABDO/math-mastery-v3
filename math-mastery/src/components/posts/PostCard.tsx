@@ -6,25 +6,18 @@ import {
   Heart, 
   MessageCircle, 
   Share2, 
-  Eye, 
-  Calendar,
-  User,
-  Star,
-  FileText,
-  Video,
+  BookOpen, 
+  FileText, 
+  Video, 
   HelpCircle,
-  BookOpen
+  Eye,
+  Calendar,
+  Star
 } from 'lucide-react'
-import { PostWithAuthor } from '@/types'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { 
-  formatRelativeTime, 
-  getChapterColor, 
-  getTypeIcon,
-  truncateText,
-  getInitials
-} from '@/lib/utils'
+import { formatRelativeTime, getChapterColor, getTypeIcon } from '@/lib/utils'
+import { PostWithAuthor } from '@/types'
 import ReactMarkdown from 'react-markdown'
 import 'katex/dist/katex.min.css'
 import { InlineMath, BlockMath } from 'react-katex'
@@ -70,9 +63,8 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const renderContent = (content: string) => {
     const components = {
-      // Rendu des formules LaTeX inline
-      code: ({ node, inline, className, children, ...props }: any) => {
-        const match = /language-(\w+)/.exec(className || '')
+      // Rendu des formules LaTeX inline  
+      code: ({ inline, className, children, ...props }: any) => {
         if (inline && typeof children === 'string' && children.startsWith('$') && children.endsWith('$')) {
           const formula = children.slice(1, -1)
           return <InlineMath math={formula} />
@@ -82,8 +74,11 @@ const PostCard: React.FC<PostCardProps> = ({
       // Rendu des blocs de formules LaTeX
       pre: ({ children }: any) => {
         const child = React.Children.only(children)
-        if (React.isValidElement(child) && child.props.children) {
-          const content = child.props.children
+        if (React.isValidElement(child) && 
+            typeof child.props === 'object' && 
+            child.props !== null && 
+            'children' in child.props) {
+          const content = (child.props as { children: unknown }).children
           if (typeof content === 'string' && content.startsWith('$$') && content.endsWith('$$')) {
             const formula = content.slice(2, -2)
             return <BlockMath math={formula} />

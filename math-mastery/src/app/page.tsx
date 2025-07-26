@@ -6,7 +6,6 @@ import {
   BookOpen, 
   Users, 
   TrendingUp, 
-  Star, 
   ArrowRight,
   Calculator,
   Target,
@@ -16,13 +15,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import PostCard from '@/components/posts/PostCard'
-import { PostWithAuthor, CHAPITRES } from '@/types'
+import { PostWithAuthor } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 
 const HomePage: React.FC = () => {
   const { user } = useAuth()
   const [recentPosts, setRecentPosts] = useState<PostWithAuthor[]>([])
-  const [popularPosts, setPopularPosts] = useState<PostWithAuthor[]>([])
   const [loading, setLoading] = useState(true)
 
   // Simuler des données pour la démo
@@ -39,7 +37,7 @@ const HomePage: React.FC = () => {
           chapitre: 'analyse' as const,
           auteur_id: '1',
           date_creation: new Date(Date.now() - 86400000).toISOString(),
-          date_modification: null,
+          date_modification: undefined,
           likes_count: 24,
           vues_count: 156,
           partages_count: 8,
@@ -51,10 +49,10 @@ const HomePage: React.FC = () => {
             nom: 'El Idrissi',
             prenom: 'Hassan',
             role: 'admin' as const,
-            photo_profil: null,
+            photo_profil: undefined,
             bio: 'Professeur de mathématiques, spécialiste en analyse',
             date_inscription: '2024-01-01T00:00:00Z',
-            derniere_connexion: null
+            derniere_connexion: undefined
           },
           uploads: [],
           comments: [],
@@ -69,7 +67,7 @@ const HomePage: React.FC = () => {
           chapitre: 'algebre' as const,
           auteur_id: '2',
           date_creation: new Date(Date.now() - 172800000).toISOString(),
-          date_modification: null,
+          date_modification: undefined,
           likes_count: 18,
           vues_count: 89,
           partages_count: 5,
@@ -81,10 +79,10 @@ const HomePage: React.FC = () => {
             nom: 'Bennani',
             prenom: 'Amal',
             role: 'utilisateur' as const,
-            photo_profil: null,
-            bio: null,
+            photo_profil: undefined,
+            bio: undefined,
             date_inscription: '2024-01-15T00:00:00Z',
-            derniere_connexion: null
+            derniere_connexion: undefined
           },
           uploads: [],
           comments: [],
@@ -93,7 +91,6 @@ const HomePage: React.FC = () => {
       ]
 
       setRecentPosts(mockPosts)
-      setPopularPosts(mockPosts.sort((a, b) => b.likes_count - a.likes_count))
       setLoading(false)
     }
 
@@ -151,7 +148,7 @@ const HomePage: React.FC = () => {
               du 2BAC
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-              Rejoignez la communauté d'étudiants marocains en Sciences Mathématiques et Physiques. 
+              Rejoignez la communauté d&apos;étudiants marocains en Sciences Mathématiques et Physiques. 
               Cours, exercices, quiz et entraide pour exceller au Baccalauréat.
             </p>
             
@@ -339,7 +336,7 @@ const HomePage: React.FC = () => {
               Prêt à exceller en mathématiques ?
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Rejoignez des milliers d'étudiants qui ont choisi Math Mastery pour réussir leur 2BAC
+              Rejoignez des milliers d&apos;étudiants qui ont choisi Math Mastery pour réussir leur 2BAC
             </p>
             <Link href="/inscription">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">

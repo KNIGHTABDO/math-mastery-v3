@@ -90,7 +90,7 @@ export interface AdminStats {
   popular_posts: PostWithAuthor[]
   recent_activity: {
     type: 'post' | 'comment' | 'like'
-    data: any
+    data: Record<string, unknown>
     date: string
   }[]
 }
@@ -116,7 +116,7 @@ export interface AppState {
 export interface AppError {
   message: string
   code?: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 // Constants
