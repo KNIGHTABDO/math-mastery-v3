@@ -113,19 +113,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Créer le profil utilisateur via API route pour contourner RLS
         try {
           console.log('Création du profil utilisateur...')
+          const requestBody = {
+            id: data.user.id,
+            email: data.user.email,
+            nom: userData.nom,
+            prenom: userData.prenom,
+            role: 'utilisateur',
+            date_inscription: new Date().toISOString()
+          }
+          
+          console.log('Corps de la requête:', requestBody)
+          
           const response = await fetch('/api/users/create-profile', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              id: data.user.id,
-              email: data.user.email,
-              nom: userData.nom,
-              prenom: userData.prenom,
-              role: 'utilisateur',
-              date_inscription: new Date().toISOString()
-            })
+            body: JSON.stringify(requestBody)
           })
 
           console.log('Réponse de l\'API create-profile:', response.status)
@@ -158,8 +162,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Erreur lors de la déconnexion:', error)
+        throw error
+      }
+      setUser(null)
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error)
+      throw error
+    }
   }
 
   const updateUser = async (userData: Partial<AuthUser>) => {

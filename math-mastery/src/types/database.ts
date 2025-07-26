@@ -6,6 +6,14 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export interface QuizQuestion {
+  id: string
+  question: string
+  options: string[]
+  correctAnswer: number
+  explanation?: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -64,7 +72,7 @@ export type Database = {
           video_url?: string
           difficulty?: 'facile' | 'moyen' | 'difficile'
           time_limit?: number
-          questions?: Json
+          questions?: QuizQuestion[]
         }
         Insert: {
           id?: string
@@ -84,7 +92,7 @@ export type Database = {
           video_url?: string
           difficulty?: 'facile' | 'moyen' | 'difficile'
           time_limit?: number
-          questions?: Json
+          questions?: QuizQuestion[]
         }
         Update: {
           id?: string
@@ -104,7 +112,7 @@ export type Database = {
           video_url?: string
           difficulty?: 'facile' | 'moyen' | 'difficile'
           time_limit?: number
-          questions?: Json
+          questions?: QuizQuestion[]
         }
       }
       comments: {

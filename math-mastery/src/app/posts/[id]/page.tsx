@@ -20,7 +20,7 @@ import { PostWithAuthor, CommentWithUser } from '@/types'
 const PostPage: React.FC = () => {
   const { id } = useParams()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [post, setPost] = useState<PostWithAuthor | null>(null)
   const [comments, setComments] = useState<CommentWithUser[]>([])
   const [newComment, setNewComment] = useState('')
@@ -385,7 +385,12 @@ const PostPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             {/* Add Comment Form */}
-            {user ? (
+            {authLoading ? (
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6 text-center">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-500" />
+                <p className="text-gray-500 mt-2">Chargement...</p>
+              </div>
+            ) : user ? (
               <form onSubmit={handleComment} className="mb-6">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">

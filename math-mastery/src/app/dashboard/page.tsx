@@ -186,6 +186,17 @@ const DashboardPage: React.FC = () => {
     )
   }
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-4"></div>
+          <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded mx-auto"></div>
+        </div>
+      </div>
+    )
+  }
+
   if (!user) return null
 
   return (

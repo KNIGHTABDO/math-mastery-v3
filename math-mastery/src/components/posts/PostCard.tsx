@@ -162,7 +162,15 @@ const PostCard: React.FC<PostCardProps> = ({
       <CardContent>
         {/* Contenu */}
         <PostContent
-          post={localPost}
+          post={{
+            id: localPost.id,
+            type: localPost.type,
+            contenu: localPost.contenu,
+            video_url: localPost.video_url,
+            difficulty: localPost.difficulty,
+            time_limit: localPost.time_limit,
+            questions: localPost.questions
+          }}
           showFullContent={showFullContent}
         />
 

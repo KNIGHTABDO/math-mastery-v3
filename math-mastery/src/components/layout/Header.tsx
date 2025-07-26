@@ -30,8 +30,14 @@ const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push('/')
+    try {
+      await signOut()
+      router.push('/')
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error)
+      // Still redirect even if there's an error
+      router.push('/')
+    }
   }
 
   const handleSearch = (e: React.FormEvent) => {

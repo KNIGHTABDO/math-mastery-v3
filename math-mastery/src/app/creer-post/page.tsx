@@ -43,7 +43,7 @@ interface QuizQuestion {
 }
 
 const CreatePostPage: React.FC = () => {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [formData, setFormData] = useState<CreatePostForm>({
     titre: '',
@@ -62,10 +62,10 @@ const CreatePostPage: React.FC = () => {
   const [error, setError] = useState('')
 
   React.useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/connexion')
     }
-  }, [user, router])
+  }, [user, authLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,6 +75,10 @@ const CreatePostPage: React.FC = () => {
     setLoading(true)
 
     try {
+      console.log('=== DÉBUT CRÉATION POST ===')
+      console.log('Form data:', formData)
+      console.log('User:', user)
+      
       // Validation
       if (!formData.titre.trim() || !formData.contenu.trim()) {
         throw new Error('Le titre et le contenu sont obligatoires')
@@ -110,6 +114,7 @@ const CreatePostPage: React.FC = () => {
       
       if (formData.type === 'video') {
         typeSpecificData.video_url = formData.videoUrl
+        console.log('Données vidéo:', typeSpecificData)
       }
       
       if (formData.type === 'exercice' || formData.type === 'quiz') {
@@ -121,7 +126,9 @@ const CreatePostPage: React.FC = () => {
         typeSpecificData.questions = formData.questions
       }
 
-      // Créer le post
+      console.log('Type specific data:', typeSpecificData)
+
+      // Créer le post avec toutes les données
       const postData = {
         titre: formData.titre.trim(),
         contenu: formData.contenu.trim(),
@@ -137,13 +144,24 @@ const CreatePostPage: React.FC = () => {
         ...typeSpecificData
       }
 
+      console.log('Post data final:', postData)
+      console.log('Envoi vers Supabase...')
+
       const { data, error: postError } = await supabase
         .from('posts')
         .insert(postData)
         .select()
         .single()
 
-      if (postError) throw postError
+      console.log('Réponse Supabase:', { data, error: postError })
+
+      if (postError) {
+        console.error('Erreur Supabase:', postError)
+        throw postError
+      }
+
+      console.log('Post créé avec succès:', data)
+      console.log('Redirection vers:', `/posts/${data.id}`)
 
       // Rediriger vers le post créé
       router.push(`/posts/${data.id}`)
@@ -501,6 +519,17 @@ L'URL de la vidéo sera ajoutée dans la section ci-dessous.`
       default:
         return null
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-pulse text-center">
+          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-4"></div>
+          <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded mx-auto"></div>
+        </div>
+      </div>
+    )
   }
 
   if (!user) return null

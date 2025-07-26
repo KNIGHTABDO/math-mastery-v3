@@ -3,7 +3,19 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    // Simple approach - directly use request.json() with better error handling
+    let body
+    try {
+      body = await request.json()
+    } catch (jsonError) {
+      console.error('Erreur lors du parsing JSON:', jsonError)
+      return NextResponse.json(
+        { error: 'Format JSON invalide', message: 'Le corps de la requête n\'est pas un JSON valide', details: jsonError },
+        { status: 400 }
+      )
+    }
+
+    console.log('Corps de la requête reçu:', body)
     const { id, email, nom, prenom, role, date_inscription } = body
 
     console.log('Tentative de création de profil pour:', { id, email, nom, prenom })

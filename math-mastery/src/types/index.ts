@@ -1,4 +1,7 @@
-import { Database } from './database'
+import { Database, QuizQuestion } from './database'
+
+// Re-export QuizQuestion
+export type { QuizQuestion }
 
 // Types dérivés de la base de données
 export type User = Database['public']['Tables']['users']['Row']
