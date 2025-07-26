@@ -60,6 +60,11 @@ export type Database = {
           partages_count: number
           officiel: boolean
           actif: boolean
+          // Nouveaux champs pour les types enrichis
+          video_url?: string
+          difficulty?: 'facile' | 'moyen' | 'difficile'
+          time_limit?: number
+          questions?: Json
         }
         Insert: {
           id?: string
@@ -76,6 +81,10 @@ export type Database = {
           partages_count?: number
           officiel?: boolean
           actif?: boolean
+          video_url?: string
+          difficulty?: 'facile' | 'moyen' | 'difficile'
+          time_limit?: number
+          questions?: Json
         }
         Update: {
           id?: string
@@ -92,6 +101,10 @@ export type Database = {
           partages_count?: number
           officiel?: boolean
           actif?: boolean
+          video_url?: string
+          difficulty?: 'facile' | 'moyen' | 'difficile'
+          time_limit?: number
+          questions?: Json
         }
       }
       comments: {

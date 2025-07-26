@@ -17,15 +17,11 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { formatRelativeTime, getChapterColor, getTypeIcon, getInitials, truncateText } from '@/lib/utils'
+import { formatRelativeTime, getChapterColor, getTypeIcon, getInitials } from '@/lib/utils'
 import { PostWithAuthor } from '@/types'
-import ReactMarkdown from 'react-markdown'
-import type { Components } from 'react-markdown'
-import 'katex/dist/katex.min.css'
 import ShareModal from './ShareModal'
 import PostContent from './PostContent'
 import { supabase } from '@/lib/supabase'
-import { InlineMath, BlockMath } from 'react-katex'
 
 interface PostCardProps {
   post: PostWithAuthor
@@ -99,42 +95,6 @@ const PostCard: React.FC<PostCardProps> = ({
     }
   }
 
-  const renderContent = (content: string) => {
-    const components: Components = {
-      // Rendu des formules LaTeX inline  
-      code: (props) => {
-        const { children, className, ...rest } = props
-        // Check if this is inline LaTeX
-        if (typeof children === 'string' && children.startsWith('$') && children.endsWith('$')) {
-          const formula = children.slice(1, -1)
-          return <InlineMath math={formula} />
-        }
-        return <code className={className} {...rest}>{children}</code>
-      },
-      // Rendu des blocs de formules LaTeX
-      pre: ({ children }) => {
-        const child = React.Children.only(children)
-        if (React.isValidElement(child) && 
-            typeof child.props === 'object' && 
-            child.props !== null && 
-            'children' in child.props) {
-          const content = (child.props as { children: unknown }).children
-          if (typeof content === 'string' && content.startsWith('$$') && content.endsWith('$$')) {
-            const formula = content.slice(2, -2)
-            return <BlockMath math={formula} />
-          }
-        }
-        return <pre>{children}</pre>
-      }
-    }
-
-    return (
-      <ReactMarkdown components={components}>
-        {showFullContent ? content : truncateText(content, 300)}
-      </ReactMarkdown>
-    )
-  }
-
   return (
     <Card variant="elevated" className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
@@ -201,9 +161,10 @@ const PostCard: React.FC<PostCardProps> = ({
 
       <CardContent>
         {/* Contenu */}
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          {renderContent(localPost.contenu)}
-        </div>
+        <PostContent
+          post={localPost}
+          showFullContent={showFullContent}
+        />
 
         {!showFullContent && localPost.contenu.length > 300 && (
           <Link 
